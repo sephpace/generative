@@ -5,10 +5,10 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from models import *
+from . import models
 
-EPOCHS = 5
-LEARNING_RATE = 0.01
+EPOCHS = 20
+LEARNING_RATE = 0.001
 BATCH_SIZE = 6
 SHUFFLE = True
 
@@ -24,9 +24,9 @@ data_loader = DataLoader(mnist_data, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
 #  Set Up Models  #
 ###################
 
-encoder = Encoder()
-decoder = Decoder(batch_size=BATCH_SIZE)
-auto_encoder = AutoEncoder(encoder, decoder)
+encoder = models.Encoder()
+decoder = models.Decoder(batch_size=BATCH_SIZE)
+auto_encoder = models.AutoEncoder(encoder, decoder)
 
 optimizer = optim.SGD(auto_encoder.parameters(), lr=LEARNING_RATE)
 criterion = torch.nn.MSELoss()
@@ -35,6 +35,7 @@ criterion = torch.nn.MSELoss()
 #    Training     #
 ###################
 
+auto_encoder.train()
 status_template = 'Epoch: {epoch:{EPOCHS_STR_LEN}d}/{EPOCHS}  Item: {step}/{data_length}  Loss: {loss:.4f}'
 
 for epoch in range(EPOCHS):
