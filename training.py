@@ -5,11 +5,11 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from . import models
+import models
 
-EPOCHS = 20
+EPOCHS = 500
 LEARNING_RATE = 0.001
-BATCH_SIZE = 6
+BATCH_SIZE = 8
 SHUFFLE = True
 
 
@@ -25,7 +25,7 @@ data_loader = DataLoader(mnist_data, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
 ###################
 
 encoder = models.Encoder()
-decoder = models.Decoder(batch_size=BATCH_SIZE)
+decoder = models.Decoder()
 auto_encoder = models.AutoEncoder(encoder, decoder)
 
 optimizer = optim.SGD(auto_encoder.parameters(), lr=LEARNING_RATE)

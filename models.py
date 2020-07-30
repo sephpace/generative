@@ -1,7 +1,6 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class AutoEncoder(nn.Module):
@@ -36,8 +35,8 @@ class AutoEncoder(nn.Module):
         Returns:
             (Tensor): The output image data.
         """
-        z, indices = self.encoder(x)
-        y = self.decoder(z, indices)
+        z = self.encoder(x)
+        y = self.decoder(z)
         return y
 
 
@@ -46,21 +45,35 @@ class Encoder(nn.Module):
     The encoder uses convolutional neural networks to condense image data into a single vector.
 
     Attributes:
-        conv1 (Conv2d): The first CNN.
-        conv2 (Conv2d): The second CNN.
-        lin1 (Linear):  The first linear layer.
-        lin2 (Linear):  The second linear layer.
+        main (Sequential): A sequential network of convolutions, batch norms, and relu activations.
     """
 
-    def __init__(self):
+    def __init__(self, k_size=3, stride=2):
         """
         Constructor.
+
+        Args:
+            k_size (int):      The kernel size for the convolutional layers.
+            stride (int):      The stride of each convolutional layer.
         """
         super(Encoder, self).__init__()
-        self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
-        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
-        self.lin1 = nn.Linear(320, 160)
-        self.lin2 = nn.Linear(160, 50)
+
+        # Set up convolutional layers
+        conv = (
+            nn.Conv2d(1, 5, k_size, stride=stride),
+            nn.Conv2d(5, 10, k_size, stride=stride),
+            nn.Conv2d(10, 15, k_size, stride=stride),
+        )
+
+        # Add batch norms and activations
+        modules = []
+        for c in conv:
+            modules.append(c)
+            modules.append(nn.BatchNorm2d(c.out_channels))
+            modules.append(nn.ReLU())
+
+        # Package in sequential model
+        self.main = nn.Sequential(*modules)
 
     def forward(self, x):
         """
@@ -71,18 +84,11 @@ class Encoder(nn.Module):
 
         Returns:
             (Tensor): An encoded vector for the inputted image
-            (tuple):  The indices for the max pools.
         """
-        y = self.conv1(x)
-        y, i1 = F.max_pool2d(y, kernel_size=(2, 2), return_indices=True)
+        y = self.main(x)
+        y = y.flatten(start_dim=1)
         y = torch.sigmoid(y)
-        y = self.conv2(y)
-        y, i2 = F.max_pool2d(y, kernel_size=(2, 2), return_indices=True)
-        y = torch.sigmoid(y)
-        y = y.view(-1, 320)
-        y = torch.sigmoid(self.lin1(y))
-        y = torch.sigmoid(self.lin2(y))
-        return y, (i1, i2)
+        return y
 
 
 class Decoder(nn.Module):
@@ -91,44 +97,47 @@ class Decoder(nn.Module):
     to recreate the initial image.
 
     Attributes:
-        batch_size (int):        The batch size.
-        conv1 (ConvTranspose2d): The first transpose CNN.
-        conv2 (ConvTranspose2d): The second transpose CNN.
-        lin1 (Linear):           The first linear layer.
-        lin2 (Linear):           The second linear layer.
+        main (Sequential): A sequential network of transpose convolutions, batch norms, and relu
+                               activations.
     """
 
-    def __init__(self, batch_size=1):
+    def __init__(self, k_size=3, stride=2):
         """
         Constructor.
 
         Args:
-            batch_size (int): The batch size.
+            k_size (int):      The kernel size for the deconvolutional layers.
+            stride (int):      The stride of each deconvolutional layer.
         """
         super(Decoder, self).__init__()
-        self.batch_size = batch_size
 
-        self.lin1 = nn.Linear(50, 160)
-        self.lin2 = nn.Linear(160, 320)
-        self.conv1 = nn.ConvTranspose2d(20, 10, kernel_size=5)
-        self.conv2 = nn.ConvTranspose2d(10, 1, kernel_size=5)
+        # Set up deconvolutional layers
+        deconv = (
+            nn.ConvTranspose2d(15, 10, k_size, stride=stride, output_padding=1),
+            nn.ConvTranspose2d(10, 5, k_size, stride=stride, output_padding=0),
+            nn.ConvTranspose2d(5, 1, k_size, stride=stride, output_padding=1),
+        )
 
-    def forward(self, x, indices):
+        # Add batch norms and activations
+        modules = []
+        for d in deconv:
+            modules.append(d)
+            modules.append(nn.BatchNorm2d(d.out_channels))
+            modules.append(nn.ReLU())
+
+        # Package in sequential model
+        self.main = nn.Sequential(*modules)
+
+    def forward(self, x):
         """
         Forward pass.
 
         Args:
-            x (Tensor):      The compressed vector from the encoder.
-            indices (tuple): The indices from the max pools from the encoder.
+            x (Tensor): The compressed vector from the encoder.
 
         Returns:
-            (Tensor/Image): The output image data (or image).
+            (Tensor): The output image data tensor.
         """
-        y = torch.sigmoid(self.lin1(x))
-        y = torch.sigmoid(self.lin2(y))
-        y = y.view(self.batch_size, 20, 4, 4)
-        y = F.max_unpool2d(y, indices[1], kernel_size=(2, 2))
-        y = torch.sigmoid(self.conv1(y))
-        y = F.max_unpool2d(y, indices[0], kernel_size=(2, 2))
-        y = torch.sigmoid(self.conv2(y))
+        y = x.view(-1, 15, 2, 2)
+        y = self.main(y)
         return y
