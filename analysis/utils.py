@@ -42,3 +42,55 @@ def visualize_input_output(io, **kwargs):
     if save:
         plt.savefig(os.path.join(SAVE_DIR, file_name))
     plt.show()
+
+
+class Logger:
+    """
+    Prints data to stdout and writes it into a log file in the analysis folder.
+
+    Attributes:
+        __last (int):         The previous amount of bytes written to the log.
+        __total (int):        The total amount of bytes written to the log.
+        file (TextIOWrapper): The log file to write the data to.
+    """
+
+    def __init__(self, file_name):
+        """
+        Constructor.
+
+        Args:
+            file_name (str): The name of the log file (e.g. 'train.log').
+        """
+        self.__last = 0
+        self.__total = 0
+
+        self.file = open(os.path.join(SAVE_DIR, file_name), 'w')
+
+    def __del__(self):
+        """
+        Closes the log file when the logger is deleted.
+        """
+        self.close()
+
+    def close(self):
+        """
+        Closes the log file.
+        """
+        self.file.close()
+
+    def write(self, data, overwrite=False):
+        """
+        Writes the given data to the log file.
+
+        Args:
+            data (str):                 The line of data to write to the log file.
+            overwrite (Optional[bool]): True if the previous line should be overwritten. Defaults to False.
+        """
+        if overwrite:
+            print(data, end='\r')
+            self.file.seek(self.__total - self.__last)
+            self.__total -= self.__last
+        else:
+            print(data)
+        self.__last = self.file.write(f'{data}\n')
+        self.__total += self.__last
