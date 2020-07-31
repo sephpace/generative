@@ -1,11 +1,11 @@
 
-import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
+from analysis import visualize_input_output
 import models
 
 
@@ -67,13 +67,4 @@ for x, t in mnist_data:
         break
 
 # Display inputs and outputs
-
-fig = plt.figure(figsize=(8, 8))
-rows = 5
-cols = 4
-for i, (x, y) in enumerate(digits):
-    fig.add_subplot(rows, cols, i * 2 + 1)
-    plt.imshow(x)
-    fig.add_subplot(rows, cols, i * 2 + 2)
-    plt.imshow(y)
-plt.show()
+visualize_input_output(digits, save=True)

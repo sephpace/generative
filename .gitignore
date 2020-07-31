@@ -2,6 +2,9 @@ venv
 __pycache__
 .idea
 *.pyc
+analysis/*
+!analysis/__init__.py
+!analysis/utils.py
 data/*
 !data/.gitkeep
 states/*
