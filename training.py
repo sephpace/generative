@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from analysis import Logger
+from analysis import Logger, TrainingLogTemplate
 import models
 
 EPOCHS = 500
@@ -37,12 +37,11 @@ criterion = torch.nn.MSELoss()
 ###################
 
 auto_encoder.train()
-status_template = 'Epoch: {epoch:{EPOCHS_STR_LEN}d}/{EPOCHS}  Item: {step}/{data_length}  Loss: {loss:.4f}'
-log = Logger('train.log')
+log = Logger('train.log', TrainingLogTemplate())
 
 for epoch in range(EPOCHS):
     epoch_loss = 0
-    status = ''
+    ctx = {}
     for step, (x, _) in enumerate(data_loader):
         # Train
         y = auto_encoder(x)
@@ -53,16 +52,15 @@ for epoch in range(EPOCHS):
 
         # Display status
         epoch_loss += loss.item()
-        status = status_template.format_map({
+        ctx = {
             'epoch': epoch + 1,
-            'EPOCHS': EPOCHS,
-            'EPOCHS_STR_LEN': len(str(EPOCHS)),
+            'epochs': EPOCHS,
             'step': step + 1,
             'loss': epoch_loss / (step + 1),
-            'data_length': len(data_loader),
-        })
-        log.write(status, overwrite=True)
-    log.write(status)
+            'data_len': len(data_loader),
+        }
+        log.write(ctx, overwrite=True)
+    log.write(ctx)
 log.close()
 
 ###################

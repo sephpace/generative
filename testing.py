@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from analysis import Logger, visualize_input_output
+from analysis import Logger, TestingLogTemplate, visualize_input_output
 import models
 
 
@@ -33,8 +33,7 @@ auto_encoder = models.AutoEncoder(encoder, decoder)
 ###################
 
 auto_encoder.eval()
-status_template = 'Item: {step}/{data_length}  Loss: {loss:.4f}'
-log = Logger('test.log')
+log = Logger('test.log', TestingLogTemplate())
 
 total_loss = 0
 status = ''
@@ -45,12 +44,12 @@ for step, (x, _) in enumerate(data_loader):
 
     # Display status
     total_loss += loss.item()
-    status = status_template.format_map({
+    ctx = {
         'step': step + 1,
         'loss': total_loss / (step + 1),
-        'data_length': len(data_loader),
-    })
-    log.write(status, overwrite=True)
+        'data_len': len(data_loader),
+    }
+    log.write(ctx, overwrite=True)
 log.close()
 
 ###################
