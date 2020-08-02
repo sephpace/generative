@@ -1,5 +1,4 @@
 
-import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -20,13 +19,8 @@ data_loader = DataLoader(mnist_data)
 #  Set Up Models  #
 ###################
 
-encoder = models.Encoder()
-decoder = models.Decoder()
-
-encoder.load_state_dict(torch.load('states/encoder.pt'))
-decoder.load_state_dict(torch.load('states/decoder.pt'))
-
-auto_encoder = models.AutoEncoder(encoder, decoder)
+auto_encoder = models.AutoEncoder()
+auto_encoder.load_states()
 
 ###################
 #     Testing     #

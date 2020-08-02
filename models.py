@@ -13,17 +13,13 @@ class AutoEncoder(nn.Module):
         encoder (Encoder): An encoder to compress image data into a single vector.
     """
 
-    def __init__(self, encoder, decoder):
+    def __init__(self):
         """
         Constructor.
-
-        Args:
-            encoder (Encoder): An encoder object.
-            decoder (Decoder): A decoder object.
         """
         super(AutoEncoder, self).__init__()
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder = Encoder()
+        self.decoder = Decoder()
 
     def forward(self, x):
         """
@@ -38,6 +34,20 @@ class AutoEncoder(nn.Module):
         z = self.encoder(x)
         y = self.decoder(z)
         return y
+
+    def load_states(self):
+        """
+        Loads the encoder and decoder states from the states directory.
+        """
+        self.encoder.load_state_dict(torch.load('states/encoder.pt'))
+        self.decoder.load_state_dict(torch.load('states/decoder.pt'))
+
+    def save_states(self):
+        """
+        Saves the encoder and decoder states to the states directory.
+        """
+        torch.save(self.encoder.state_dict(), 'states/encoder.pt')
+        torch.save(self.decoder.state_dict(), 'states/decoder.pt')
 
 
 class Encoder(nn.Module):
@@ -101,21 +111,18 @@ class Decoder(nn.Module):
                                activations.
     """
 
-    def __init__(self, k_size=3, stride=2):
+    def __init__(self):
         """
         Constructor.
-
-        Args:
-            k_size (int):      The kernel size for the deconvolutional layers.
-            stride (int):      The stride of each deconvolutional layer.
         """
         super(Decoder, self).__init__()
 
         # Set up deconvolutional layers
         deconv = (
-            nn.ConvTranspose2d(15, 10, k_size, stride=stride, output_padding=1),
-            nn.ConvTranspose2d(10, 5, k_size, stride=stride, output_padding=0),
-            nn.ConvTranspose2d(5, 1, k_size, stride=stride, output_padding=1),
+            nn.ConvTranspose2d(15, 10, 3),
+            nn.ConvTranspose2d(10, 8, 3),
+            nn.ConvTranspose2d(8, 5, 3, stride=2),
+            nn.ConvTranspose2d(5, 1, 3, stride=2, output_padding=1),
         )
 
         # Add batch norms and activations

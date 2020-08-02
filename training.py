@@ -25,9 +25,7 @@ data_loader = DataLoader(mnist_data, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
 #  Set Up Models  #
 ###################
 
-encoder = models.Encoder()
-decoder = models.Decoder()
-auto_encoder = models.AutoEncoder(encoder, decoder)
+auto_encoder = models.AutoEncoder()
 
 optimizer = optim.SGD(auto_encoder.parameters(), lr=LEARNING_RATE)
 criterion = torch.nn.MSELoss()
@@ -67,5 +65,4 @@ log.close()
 #   Save Models   #
 ###################
 
-torch.save(encoder.state_dict(), 'states/encoder.pt')
-torch.save(decoder.state_dict(), 'states/decoder.pt')
+auto_encoder.save_states()
