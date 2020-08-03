@@ -1,4 +1,6 @@
 
-# Auto Encoders
+# Generative
 
-Auto encoder neural network models implemented in Pytorch 
+GANs, Autoencoders, and other generative neural networks.
+
+Implemented in Pytorch.
