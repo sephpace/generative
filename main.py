@@ -52,9 +52,7 @@ if __name__ == '__main__':
     }
 
     # Parse model choices
-    training_files = set(os.listdir(os.path.join(ROOT_DIR, 'training')))
-    testing_files = set(os.listdir(os.path.join(ROOT_DIR, 'testing')))
-    files = list(training_files.intersection(testing_files))
+    files = os.listdir(os.path.join(ROOT_DIR, 'models'))
     files.remove('__init__.py')
     files.remove('__pycache__')
     models = [os.path.splitext(file)[0] for file in files]
