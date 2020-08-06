@@ -6,6 +6,7 @@ analysis/*
 !analysis/__init__.py
 !analysis/utils.py
 data/*
-!data/.gitkeep
+!data/__init__.py
+!data/dataset.py
 states/*
 !states/.gitkeep
