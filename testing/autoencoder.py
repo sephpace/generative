@@ -1,10 +1,9 @@
 
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from torchvision import transforms
-from torchvision.datasets import MNIST
 
 from analysis import Logger, TestingLogTemplate, visualize_input_output
+from data import PokemonDataset
 import models
 
 
@@ -13,8 +12,8 @@ def test():
     #    Load Data    #
     ###################
 
-    mnist_data = MNIST('data', transform=transforms.ToTensor(), download=True, train=False)
-    data_loader = DataLoader(mnist_data)
+    dataset = PokemonDataset()
+    data_loader = DataLoader(dataset)
 
     ###################
     #  Set Up Models  #
@@ -50,16 +49,11 @@ def test():
     #     Visuals     #
     ###################
 
-    # Get inputs and outputs for each digit
-    digits = []
-    digit = 0
-    for x, t in mnist_data:
-        if t == digit:
-            y = auto_encoder(x.unsqueeze(0))
-            digits.append((x.squeeze(), y.detach().squeeze()))
-            digit += 1
-        if digit > 9:
-            break
+    # Get inputs and outputs for nine pokemon
+    samples = []
+    for x, t in dataset[:10]:
+        y = auto_encoder(x.unsqueeze(0))
+        samples.append((x.squeeze(), y.detach().squeeze()))
 
     # Display inputs and outputs
-    visualize_input_output(digits, save=True)
+    visualize_input_output(samples, save=True)

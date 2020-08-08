@@ -63,16 +63,18 @@ class Encoder(nn.Module):
         Constructor.
 
         Args:
-            k_size (int):      The kernel size for the convolutional layers.
-            stride (int):      The stride of each convolutional layer.
+            k_size (int): The kernel size for the convolutional layers.
+            stride (int): The stride of each convolutional layer.
         """
         super(Encoder, self).__init__()
 
         # Set up convolutional layers
         conv = (
-            nn.Conv2d(1, 5, k_size, stride=stride),
-            nn.Conv2d(5, 10, k_size, stride=stride),
-            nn.Conv2d(10, 15, k_size, stride=stride),
+            nn.Conv2d(4, 8, k_size, stride=stride),
+            nn.Conv2d(8, 12, k_size, stride=stride),
+            nn.Conv2d(12, 16, k_size, stride=stride),
+            nn.Conv2d(16, 20, k_size, stride=stride),
+            nn.Conv2d(20, 20, k_size, stride=stride),
         )
 
         # Add batch norms and activations
@@ -107,22 +109,25 @@ class Decoder(nn.Module):
     to recreate the initial image.
 
     Attributes:
-        main (Sequential): A sequential network of transpose convolutions, batch norms, and relu
-                               activations.
+        main (Sequential): A sequential network of transpose convolutions, batch norms, and relu activations.
     """
 
-    def __init__(self):
+    def __init__(self, k_size=3):
         """
         Constructor.
+
+        Args:
+            k_size (int): The kernel size for the convolutional layers.
         """
         super(Decoder, self).__init__()
 
         # Set up deconvolutional layers
         deconv = (
-            nn.ConvTranspose2d(15, 10, 3),
-            nn.ConvTranspose2d(10, 8, 3),
-            nn.ConvTranspose2d(8, 5, 3, stride=2),
-            nn.ConvTranspose2d(5, 1, 3, stride=2, output_padding=1),
+            nn.ConvTranspose2d(20, 256, k_size),
+            nn.ConvTranspose2d(256, 256, k_size, stride=2),
+            nn.ConvTranspose2d(256, 256, k_size, stride=2),
+            nn.ConvTranspose2d(256, 128, k_size, stride=2, output_padding=1),
+            nn.ConvTranspose2d(128, 4, k_size, stride=3),
         )
 
         # Add batch norms and activations
@@ -145,6 +150,7 @@ class Decoder(nn.Module):
         Returns:
             (Tensor): The output image data tensor.
         """
-        y = x.view(-1, 15, 2, 2)
+        y = x.view(-1, 20, 2, 2)
         y = self.main(y)
+        y = torch.tanh(y)
         return y

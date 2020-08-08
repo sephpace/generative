@@ -2,13 +2,12 @@
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from torchvision import transforms
-from torchvision.datasets import MNIST
 
 from analysis import Logger, TrainingLogTemplate
+from data import PokemonDataset
 import models
 
-EPOCHS = 500
+EPOCHS = 2000
 LEARNING_RATE = 0.001
 BATCH_SIZE = 8
 SHUFFLE = True
@@ -19,8 +18,8 @@ def train():
     #    Load Data    #
     ###################
 
-    mnist_data = MNIST('data', transform=transforms.ToTensor(), download=True)
-    data_loader = DataLoader(mnist_data, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
+    dataset = PokemonDataset(add_mirrored=True)
+    data_loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=SHUFFLE)
 
     ###################
     #  Set Up Models  #
@@ -28,7 +27,7 @@ def train():
 
     auto_encoder = models.AutoEncoder()
 
-    optimizer = optim.SGD(auto_encoder.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.Adam(auto_encoder.parameters(), lr=LEARNING_RATE)
     criterion = torch.nn.MSELoss()
 
     ###################

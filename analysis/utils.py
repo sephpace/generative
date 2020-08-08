@@ -29,6 +29,8 @@ def visualize_input_output(io, **kwargs):
 
     fig = plt.figure(figsize=figsize)
     for i, (x, y) in enumerate(io):
+        x = organize_dim(x)
+        y = organize_dim(y)
         if 0 <= i < cols // 2:
             fig.add_subplot(rows, cols, i * 2 + 1, title='input')
             plt.imshow(x)
@@ -42,6 +44,23 @@ def visualize_input_output(io, **kwargs):
     if save:
         plt.savefig(os.path.join(SAVE_DIR, file_name))
     plt.show()
+
+
+def organize_dim(img):
+    """
+    Organizes the dimensions of the given image. If the image has 3 dimensions, it will
+    flip it from (C, H, W) to (H, W, C). If the image only has two dimensions, it will
+    stay the same.
+
+    Args:
+        img (Tensor): Image data in a torch tensor.
+
+    Returns:
+        (Tensor): The organized image.
+    """
+    if len(img.shape) > 2 and (img.shape[0] == 3 or img.shape[0] == 4):
+        img = img.transpose(0, 1).transpose(1, 2)
+    return img
 
 
 class Logger:
