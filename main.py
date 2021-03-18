@@ -54,7 +54,8 @@ if __name__ == '__main__':
     # Parse model choices
     files = os.listdir(os.path.join(ROOT_DIR, 'models'))
     files.remove('__init__.py')
-    files.remove('__pycache__')
+    if '__pycache__' in files:
+        files.remove('__pycache__')
     models = [os.path.splitext(file)[0] for file in files]
 
     # Set up parser
